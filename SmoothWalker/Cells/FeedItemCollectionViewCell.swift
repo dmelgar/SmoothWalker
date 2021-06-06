@@ -63,17 +63,18 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         return [leading, top, trailing, bottom]
     }
     
-    func updateChartView(with dataTypeIdentifier: String, values: [Double]) {
+    func updateChartView(with dataTypeIdentifier: String, values: [Double], intervalType: DataInterval, startDate:Date) {
         self.dataTypeIdentifier = dataTypeIdentifier
         self.statisticalValues = values
         
         // Update headerView
-        chartView.headerView.titleLabel.text = getDataTypeName(for: dataTypeIdentifier) ?? "Data"
-        chartView.headerView.detailLabel.text = createChartWeeklyDateRangeLabel()
+        let title = "\(getDataTypeName(for: dataTypeIdentifier) ?? "Data") - \(intervalType.label())"
+        chartView.headerView.titleLabel.text = title
+        chartView.headerView.detailLabel.text = createChartDateRangeLabel(intervalType: intervalType)
         
         // Update graphView
         chartView.applyDefaultConfiguration()
-        chartView.graphView.horizontalAxisMarkers = createHorizontalAxisMarkers()
+        chartView.graphView.horizontalAxisMarkers = createHorizontalAxisMarkers(intervalType: intervalType, startDate: startDate, lastDate: Date(), useWeekdays: true)
         
         // Update graphView dataSeries
         let dataPoints: [CGFloat] = statisticalValues.map { CGFloat($0) }

@@ -26,6 +26,7 @@ class HealthData {
         let typeIdentifiers: [String] = [
             HKQuantityTypeIdentifier.stepCount.rawValue,
             HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue,
+            HKQuantityTypeIdentifier.walkingSpeed.rawValue,
             HKQuantityTypeIdentifier.sixMinuteWalkTestDistance.rawValue
         ]
         

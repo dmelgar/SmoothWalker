@@ -41,10 +41,48 @@ func createChartWeeklyDateRangeLabel(lastDate: Date = Date()) -> String {
     return String(format: "%@–%@", startDateString, endDateString)
 }
 
+func createChartDateRangeLabel(intervalType: DataInterval, lastDate: Date = Date()) -> String {
+    let calendar: Calendar = .current
+
+    let endOfWeekDate = lastDate
+    let startDate: Date
+    switch intervalType {
+    case .day:
+        startDate = getLastWeekStartDate()
+    case .week:
+        startDate = startDateWeek()
+    case .month:
+        startDate = startDateMonth()
+    }
+
+    let monthDayDateFormatter = DateFormatter()
+    monthDayDateFormatter.dateFormat = "MMM d"
+    let monthDayYearDateFormatter = DateFormatter()
+    monthDayYearDateFormatter.dateFormat = "MMM d, yyyy"
+
+    var startDateString = monthDayDateFormatter.string(from: startDate)
+    var endDateString = monthDayYearDateFormatter.string(from: endOfWeekDate)
+
+    // If the start and end dates are in the same month.
+    if calendar.isDate(startDate, equalTo: endOfWeekDate, toGranularity: .month) {
+        let dayYearDateFormatter = DateFormatter()
+
+        dayYearDateFormatter.dateFormat = "d, yyyy"
+        endDateString = dayYearDateFormatter.string(from: endOfWeekDate)
+    }
+
+    // If the start and end dates are in different years.
+    if !calendar.isDate(startDate, equalTo: endOfWeekDate, toGranularity: .year) {
+        startDateString = monthDayYearDateFormatter.string(from: startDate)
+    }
+
+    return String(format: "%@–%@", startDateString, endDateString)
+}
+
 private func createMonthDayDateFormatter() -> DateFormatter {
     let dateFormatter = DateFormatter()
     
-    dateFormatter.dateFormat = "MM/dd"
+    dateFormatter.dateFormat = "M/d"
     
     return dateFormatter
 }
@@ -63,29 +101,58 @@ func createChartDateLastUpdatedLabel(_ dateLastUpdated: Date) -> String {
 func createHorizontalAxisMarkers(lastDate: Date = Date(), useWeekdays: Bool = true) -> [String] {
     let calendar: Calendar = .current
     let weekdayTitles = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    
+
     var titles: [String] = []
-    
+
     if useWeekdays {
         titles = weekdayTitles
-        
+
         let weekday = calendar.component(.weekday, from: lastDate)
-        
+
         return Array(titles[weekday..<titles.count]) + Array(titles[0..<weekday])
     } else {
         let numberOfTitles = weekdayTitles.count
         let endDate = lastDate
         let startDate = calendar.date(byAdding: DateComponents(day: -(numberOfTitles - 1)), to: endDate)!
-        
+
         let dateFormatter = createMonthDayDateFormatter()
 
         var date = startDate
-        
+
         while date <= endDate {
             titles.append(dateFormatter.string(from: date))
             date = calendar.date(byAdding: .day, value: 1, to: date)!
         }
-        
+
+        return titles
+    }
+}
+
+func createHorizontalAxisMarkers(intervalType: DataInterval = .day, startDate: Date, lastDate: Date = Date(), useWeekdays: Bool = true) -> [String] {
+    let calendar: Calendar = .current
+    let weekdayTitles = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    
+    var titles: [String] = []
+
+    if useWeekdays && intervalType == .day {
+        titles = weekdayTitles
+
+        let weekday = calendar.component(.weekday, from: lastDate)
+
+        return Array(titles[weekday..<titles.count]) + Array(titles[0..<weekday])
+    } else {
+        let endDate = lastDate
+        let startDate = getStartDate(intervalType: intervalType)
+
+        let dateFormatter = createMonthDayDateFormatter()
+
+        var date = startDate
+
+        while date <= endDate {
+            titles.append(dateFormatter.string(from: date))
+            date = date.date(byAdding: 1, dataInterval: intervalType)
+        }
+
         return titles
     }
 }
@@ -94,4 +161,17 @@ func createHorizontalAxisMarkers(for dates: [Date]) -> [String] {
     let dateFormatter = createMonthDayDateFormatter()
     
     return dates.map { dateFormatter.string(from: $0) }
+}
+
+extension Date {
+    func date(byAdding count: Int, dataInterval: DataInterval) -> Date {
+        switch dataInterval {
+        case .day:
+            return Calendar.current.date(byAdding: .day, value: count, to: self)!
+        case .week:
+            return Calendar.current.date(byAdding: .weekOfYear, value: count, to: self)!
+        case .month:
+            return Calendar.current.date(byAdding: .month, value: count, to: self)!
+        }
+    }
 }

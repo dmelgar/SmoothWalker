@@ -81,8 +81,8 @@ class WeeklyQuantitySampleTableViewController: HealthDataTableViewController, He
                    let identifier = self?.dataTypeIdentifier,
                    let unit = preferredUnit(for: identifier) {
                     dataValue.value = quantity.doubleValue(for: unit)
+                    print("\(identifier): \(dataValue.value) startDate:\(dataValue.startDate) endDate:\(dataValue.endDate)")
                 }
-                
                 self?.dataValues.append(dataValue)
             }
             

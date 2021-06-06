@@ -26,8 +26,9 @@ class DataTypeCollectionViewController: UIViewController {
         return collectionView
     }()
     
-    var data: [(dataTypeIdentifier: String, values: [Double])] = []
+    var data: [(dataTypeIdentifier: String, values: [Double], intervalType: DataInterval)] = []
     
+
     // MARK: - Initalizers
     
     init() {
@@ -142,7 +143,8 @@ extension DataTypeCollectionViewController: UICollectionViewDataSource {
             return DataTypeCollectionViewCell()
         }
         
-        cell.updateChartView(with: content.dataTypeIdentifier, values: content.values)
+        cell.updateChartView(with: content.dataTypeIdentifier, values: content.values, intervalType: content.intervalType,
+                             startDate: getStartDate(intervalType: content.intervalType))
         
         return cell
     }

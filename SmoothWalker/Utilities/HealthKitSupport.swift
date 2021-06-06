@@ -43,6 +43,10 @@ func preferredUnit(for sampleIdentifier: String) -> HKUnit? {
     return preferredUnit(for: sampleIdentifier, sampleType: nil)
 }
 
+func walkingUnit() -> HKUnit {
+    return HKUnit(from: "km/hr")
+}
+
 private func preferredUnit(for identifier: String, sampleType: HKSampleType? = nil) -> HKUnit? {
     var unit: HKUnit?
     let sampleType = sampleType ?? getSampleType(for: identifier)
@@ -55,6 +59,9 @@ private func preferredUnit(for identifier: String, sampleType: HKSampleType? = n
             unit = .count()
         case .distanceWalkingRunning, .sixMinuteWalkTestDistance:
             unit = .meter()
+        case .walkingSpeed:
+            unit = walkingUnit()
+
         default:
             break
         }
@@ -80,10 +87,39 @@ func createAnchorDate() -> Date {
     return anchorDate
 }
 
+func getStartDate(intervalType: DataInterval) -> Date {
+    switch intervalType {
+    case .day:
+        return getLastWeekStartDate()
+    case .week:
+        return startDateWeek()
+    case .month:
+        return startDateMonth()
+    }
+}
+
 /// This is commonly used for date intervals so that we get the last seven days worth of data,
 /// because we assume today (`Date()`) is providing data as well.
 func getLastWeekStartDate(from date: Date = Date()) -> Date {
     return Calendar.current.date(byAdding: .day, value: -6, to: date)!
+}
+
+func startDateMonth() -> Date {
+    let components = Calendar.current.dateComponents([.year, .month], from: Date())
+    let startOfMonth = Calendar.current.date(from: components)
+    let startDate = Calendar.current.date(byAdding: .month, value: -6, to: startOfMonth!)!
+    return startDate
+}
+
+func startDateWeek() -> Date {
+    let components = Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+    let start = Calendar.current.date(from: components)
+    let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -6, to: start!)!
+    return startDate
+}
+
+func createPredicate(startDate: Date, endDate: Date = Date()) -> NSPredicate {
+    return HKQuery.predicateForSamples(withStart: startDate, end: endDate)
 }
 
 func createLastWeekPredicate(from endDate: Date = Date()) -> NSPredicate {
@@ -103,6 +139,8 @@ func getStatisticsOptions(for dataTypeIdentifier: String) -> HKStatisticsOptions
         case .stepCount, .distanceWalkingRunning:
             options = .cumulativeSum
         case .sixMinuteWalkTestDistance:
+            options = .discreteAverage
+        case .walkingSpeed:
             options = .discreteAverage
         default:
             break
