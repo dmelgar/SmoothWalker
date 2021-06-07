@@ -30,6 +30,7 @@ class MainTabViewController: UITabBarController {
             createWelcomeViewController(),
             createWeeklyQuantitySampleTableViewController(),
             createChartViewController(),
+            createSpeedViewController(),
             createWeeklyReportViewController()
         ]
         
@@ -66,6 +67,15 @@ class MainTabViewController: UITabBarController {
         viewController.tabBarItem = UITabBarItem(title: "Charts",
                                                  image: UIImage(systemName: "square"),
                                                  selectedImage: UIImage(systemName: "square.fill"))
+        return viewController
+    }
+
+    private func createSpeedViewController() -> UIViewController {
+        let viewController = MobilityChartDataViewController(speedMode: true)
+
+        viewController.tabBarItem = UITabBarItem(title: "Speed",
+                                                 image: UIImage(systemName: "figure.walk"),
+                                                 selectedImage: UIImage(systemName: "figure.walk"))
         return viewController
     }
     
